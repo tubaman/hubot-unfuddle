@@ -1,6 +1,6 @@
 {
   "name": "hubot-unfuddle",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A Hubot script for interacting with the Unfuddle API.",
   "dependencies": {
     "unfuddle": "~0.1.0"
