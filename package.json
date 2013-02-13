@@ -1,0 +1,25 @@
+{
+  "name": "hubot-unfuddle",
+  "version": "0.0.0",
+  "description": "A Hubot script for interacting with the Unfuddle API.",
+  "dependencies": {
+    "unfuddle": "~0.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tnightingale/hubot-unfuddle.git"
+  },
+  "keywords": [
+    "unfuddle",
+    "hubot",
+    "script"
+  ],
+  "author": "Tom Nightingale",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "gitHead": "9dd758436c2ba2ae1f1c0503745b9c1e82049c77"
+}
