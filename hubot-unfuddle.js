@@ -10,10 +10,14 @@
     subdomain = process.env.HUBOT_UNFUDDLE_SUBDOMAIN;
     user = process.env.HUBOT_UNFUDDLE_USER;
     password = process.env.HUBOT_UNFUDDLE_PASSWORD;
-    robot.brain.data.unfuddle = robot.brain.data.unfuddle || {
-      projects: {}
-    };
-    projects = robot.brain.data.unfuddle.projects;
+    projects = {};
+    robot.brain.on('loaded', function() {
+      robot.brain.data.unfuddle = robot.brain.data.unfuddle || {
+        projects: {}
+      };
+      projects = robot.brain.data.unfuddle.projects;
+      return robot.logger.info("Unfuddle projects initialized.");
+    });
     unf = new Unfuddle(subdomain, user, password);
     ticket_info = function(ticket) {
       return ("#" + ticket.number + ", " + ticket.summary + " ") + ("(http://" + subdomain + ".unfuddle.com/projects/" + ticket.project_id + "/tickets/by_number/" + ticket.number + ")");

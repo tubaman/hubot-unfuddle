@@ -28,9 +28,13 @@ module.exports = (robot) ->
   subdomain = process.env.HUBOT_UNFUDDLE_SUBDOMAIN
   user     = process.env.HUBOT_UNFUDDLE_USER
   password = process.env.HUBOT_UNFUDDLE_PASSWORD
+  projects = {}
 
-  robot.brain.data.unfuddle = robot.brain.data.unfuddle or projects: {}
-  projects = robot.brain.data.unfuddle.projects
+  robot.brain.on 'loaded', () ->
+    # Set up project memory only once Hubot's brain is loaded.
+    robot.brain.data.unfuddle = robot.brain.data.unfuddle or projects: {}
+    projects = robot.brain.data.unfuddle.projects
+    robot.logger.info "Unfuddle projects initialized."
 
   unf = new Unfuddle(subdomain, user, password)
 
