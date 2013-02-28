@@ -10,8 +10,8 @@ module.exports = function(grunt) {
       files: ['test/**/*.js']
     },
     watch: {
-      files: '<config:lint.files>',
-      tasks: 'lint test'
+      files: ['./*.coffee'],
+      tasks: 'coffee lint test'
     },
     jshint: {
       options: {
