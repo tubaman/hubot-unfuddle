@@ -6,7 +6,10 @@
     "unfuddle": "~0.2.1"
   },
   "devDependencies": {
-    "grunt-contrib-coffee": "~0.3.2"
+    "grunt-contrib-coffee": "~0.6.2",
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.3.0",
+    "grunt-contrib-watch": "~0.3.1"
   },
   "main": "hubot-unfuddle.js",
   "scripts": {

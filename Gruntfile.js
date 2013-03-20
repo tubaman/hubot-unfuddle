@@ -3,15 +3,12 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
-    lint: {
-      files: ['grunt.js', './*.js', 'test/**/*.js']
-    },
-    test: {
-      files: ['test/**/*.js']
+    jshint: {
+      all: ['Gruntfile.js', './*.js', 'test/**/*.js']
     },
     watch: {
       files: ['./*.coffee'],
-      tasks: 'coffee lint test'
+      tasks: ['coffee', 'jshint']
     },
     jshint: {
       options: {
@@ -42,9 +39,11 @@ module.exports = function(grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-coffee');
 
   // Default task.
-  grunt.registerTask('default', 'coffee lint test');
+  grunt.registerTask('default', ['coffee', 'jshint']);
 
 };
