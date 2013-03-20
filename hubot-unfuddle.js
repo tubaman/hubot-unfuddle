@@ -7,6 +7,7 @@
 
   module.exports = function(robot) {
     var match_urls, password, projects, request_ticket_info, subdomain, ticket_info, unf, user;
+
     subdomain = process.env.HUBOT_UNFUDDLE_SUBDOMAIN;
     user = process.env.HUBOT_UNFUDDLE_USER;
     password = process.env.HUBOT_UNFUDDLE_PASSWORD;
@@ -25,30 +26,58 @@
     match_urls = new RegExp("https://" + subdomain + ".unfuddle.com(?:/a#)?/projects/(\\d+)/tickets/by_number/(\\d+)", "ig");
     request_ticket_info = function(response) {
       var error, project_id, success, ticket_num;
+
       project_id = response.match[1];
       ticket_num = response.match[2];
       success = function(ticket) {
         return response.send(ticket_info(ticket));
       };
       error = function(err) {
+        robot.logger.error("Error loading ticket. Details: " + err);
         return response.send("I can't seem to find that ticket.");
       };
       return unf.ticket(project_id, ticket_num).then(success, error);
     };
-    robot.hear(/^(\w+) #(\d+)$/, request_ticket_info);
+    robot.respond(/(\w+)#(\d+)/, request_ticket_info);
     robot.hear(match_urls, function(response) {
       return response.match.forEach(function(m) {
         response.match = m.match(new RegExp(match_urls.source, 'i'));
         return request_ticket_info(response);
       });
     });
-    robot.hear(/#(\d+)/gi, function(response) {
+    robot.hear(/(?:^|\s)#(\d+)/gi, function(response) {
       var error, get_ticket, num, room, success, _i, _len, _ref, _results;
+
       room = response.envelope.room;
       success = function(ticket) {
         return response.send(ticket_info(ticket));
       };
       error = function(err) {
+        robot.logger.error("(#<ticket.number>): Details: " + err);
+        return response.send("I can't find that ticket.");
+      };
+      get_ticket = function(project, num) {
+        return unf.ticket(project.id, +num).then(success, error);
+      };
+      if (projects[room]) {
+        _ref = response.match;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          num = _ref[_i];
+          _results.push(get_ticket(projects[room], num.trim().substr(1)));
+        }
+        return _results;
+      }
+    });
+    robot.respond(/(?:^|\s)#(\d+)/gi, function(response) {
+      var error, get_ticket, num, room, success, _i, _len, _ref, _results;
+
+      room = response.envelope.room;
+      success = function(ticket) {
+        return response.send(ticket_info(ticket));
+      };
+      error = function(err) {
+        robot.logger.error("(@hubot #<ticket.number>): Details: " + err);
         return response.send("I can't find that ticket.");
       };
       get_ticket = function(project, num) {
@@ -61,25 +90,24 @@
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           num = _ref[_i];
-          _results.push(get_ticket(projects[room], num.substr(1)));
+          _results.push(get_ticket(projects[room], num.trim().substr(1)));
         }
         return _results;
       }
     });
-    robot.respond(/use the (\w+) unfuddle project$/, function(response) {
+    return robot.respond(/use the (\w+) unfuddle project$/, function(response) {
       var error, room, success;
+
       room = response.envelope.room;
       success = function(project) {
         projects[room] = project;
         return response.send("I have associated the " + project.short_name + " (" + project.id + ") project with this room.");
       };
       error = function(err) {
+        robot.logger.error("Details: " + err + ".");
         return response.send("I can't do that.");
       };
       return unf.projectByShortName(response.match[1]).then(success, error);
-    });
-    return robot.hear(/tired|too hard|to hard|upset|bored|bothered/i, function(response) {
-      return response.send("Panzy");
     });
   };
 

@@ -53,14 +53,17 @@ module.exports = (robot) ->
   request_ticket_info = (response) ->
     project_id = response.match[1]
     ticket_num = response.match[2]
-    success = (ticket) -> response.send ticket_info ticket
-    error = (err) -> response.send "I can't seem to find that ticket."
+    success = (ticket) -> response.send ticket_info(ticket)
+    error = (err) ->
+      robot.logger.error "Error loading ticket. Details: #{err}"
+      response.send "I can't seem to find that ticket."
+
     unf.ticket(project_id, ticket_num).then success, error
 
   # 
-  # <project.short_name> #<ticket.number>
+  # @hubot <project.short_name>#<ticket.number>
   #
-  robot.hear /^(\w+) #(\d+)$/, request_ticket_info
+  robot.respond /(\w+)#(\d+)/, request_ticket_info
 
   #
   # <unfuddle ticket url(s)>
@@ -73,17 +76,38 @@ module.exports = (robot) ->
   #
   # #<ticket.number>
   #
-  robot.hear /#(\d+)/gi, (response) ->
+  robot.hear /(?:^|\s)#(\d+)/gi, (response) ->
     room = response.envelope.room
 
-    success = (ticket) -> response.send ticket_info ticket
-    error = (err) -> response.send "I can't find that ticket."
+    success = (ticket) -> response.send ticket_info(ticket)
+
+    error = (err) ->
+      robot.logger.error "(#<ticket.number>): Details: #{err}"
+      response.send "I can't find that ticket."
+
+    get_ticket = (project, num) -> unf.ticket(project.id, +num).then success, error
+
+    if projects[room]
+      get_ticket projects[room], num.trim().substr(1) for num in response.match
+
+  #
+  # @hubot #<ticket.number>
+  #
+  robot.respond /(?:^|\s)#(\d+)/gi, (response) ->
+    room = response.envelope.room
+
+    success = (ticket) -> response.send ticket_info(ticket)
+
+    error = (err) ->
+      robot.logger.error "(@hubot #<ticket.number>): Details: #{err}"
+      response.send "I can't find that ticket."
+
     get_ticket = (project, num) -> unf.ticket(project.id, +num).then success, error
 
     if not projects[room]
       response.send "There is no project associated with this room. Please specify a project."
     else
-      get_ticket projects[room], num.substr(1) for num in response.match
+      get_ticket projects[room], num.trim().substr(1) for num in response.match
 
   #
   # @hubot use the <project.short_name> unfuddle project>
@@ -94,12 +118,9 @@ module.exports = (robot) ->
     success = (project) ->
       projects[room] = project
       response.send "I have associated the #{project.short_name} (#{project.id}) project with this room."
-    error = (err) ->
-      response.send "I can't do that."
-    unf.projectByShortName(response.match[1]).then success, error
 
-  #
-  # ...
-  #
-  robot.hear /tired|too hard|to hard|upset|bored|bothered/i, (response) ->
-    response.send "Panzy"
+    error = (err) ->
+      robot.logger.error "Details: #{err}."
+      response.send "I can't do that."
+
+    unf.projectByShortName(response.match[1]).then success, error
