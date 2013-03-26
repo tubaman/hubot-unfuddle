@@ -3,7 +3,7 @@
   "version": "0.2.2",
   "description": "A Hubot script for interacting with the Unfuddle API.",
   "dependencies": {
-    "unfuddle": "~0.2.1"
+    "unfuddle": "~0.2.2"
   },
   "devDependencies": {
     "grunt-contrib-coffee": "~0.6.2",
