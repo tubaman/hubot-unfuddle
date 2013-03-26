@@ -110,7 +110,7 @@ module.exports = (robot) ->
       get_ticket projects[room], num.trim().substr(1) for num in response.match
 
   #
-  # @hubot use the <project.short_name> unfuddle project>
+  # @hubot use the <project.(short_name|id)> unfuddle project>
   #
   robot.respond /use the (\w+) unfuddle project$/, (response) ->
     room = response.envelope.room
@@ -119,8 +119,26 @@ module.exports = (robot) ->
       projects[room] = project
       response.send "I have associated the #{project.short_name} (#{project.id}) project with this room."
 
-    error = (err) ->
-      robot.logger.error "Details: #{err}."
-      response.send "I can't do that."
+    try_again = (err) ->
+      if err.statusCode is 401 then error(err)
+      else unf.projectById(match).then(success, error)
 
-    unf.projectByShortName(response.match[1]).then success, error
+    error = (err) ->
+      if err.statusCode is 401 then response.send "I don't have access to that project."
+      else response.send "I can't do that."
+      robot.logger.error "Details: #{err}."
+
+    match = response.match[1]
+    unf.projectByShortName(match).then success, try_again
+
+  #
+  # @hubot what is unfuddle project <project.id>
+  #
+  robot.respond /what is unfuddle project (\d+)/, (response) ->
+    success = (project) ->
+      response.send "That would be '#{project.short_name}' (#{project.id})."
+
+    error = (err) ->
+      response.send "I can't find a project with that id."
+
+    unf.projectById(response.match[1]).then success, error

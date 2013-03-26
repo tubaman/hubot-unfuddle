@@ -95,19 +95,42 @@
         return _results;
       }
     });
-    return robot.respond(/use the (\w+) unfuddle project$/, function(response) {
-      var error, room, success;
+    robot.respond(/use the (\w+) unfuddle project$/, function(response) {
+      var error, match, room, success, try_again;
 
       room = response.envelope.room;
       success = function(project) {
         projects[room] = project;
         return response.send("I have associated the " + project.short_name + " (" + project.id + ") project with this room.");
       };
-      error = function(err) {
-        robot.logger.error("Details: " + err + ".");
-        return response.send("I can't do that.");
+      try_again = function(err) {
+        if (err.statusCode === 401) {
+          return error(err);
+        } else {
+          return unf.projectById(match).then(success, error);
+        }
       };
-      return unf.projectByShortName(response.match[1]).then(success, error);
+      error = function(err) {
+        if (err.statusCode === 401) {
+          response.send("I don't have access to that project.");
+        } else {
+          response.send("I can't do that.");
+        }
+        return robot.logger.error("Details: " + err + ".");
+      };
+      match = response.match[1];
+      return unf.projectByShortName(match).then(success, try_again);
+    });
+    return robot.respond(/what is unfuddle project (\d+)/, function(response) {
+      var error, success;
+
+      success = function(project) {
+        return response.send("That would be '" + project.short_name + "' (" + project.id + ").");
+      };
+      error = function(err) {
+        return response.send("I can't find a project with that id.");
+      };
+      return unf.projectById(response.match[1]).then(success, error);
     });
   };
 
