@@ -44,7 +44,7 @@ module.exports = (robot) ->
     "(http://#{subdomain}.unfuddle.com/projects/#{ticket.project_id}/tickets/by_number/#{ticket.number})"
 
   # Match Unfuddle ticket urls.
-  match_urls = new RegExp("https://#{subdomain}.unfuddle.com(?:/a#)?/projects/(\\d+)/tickets/by_number/(\\d+)", "ig")
+  match_urls = new RegExp("https?://#{subdomain}.unfuddle.com(?:/a#)?/projects/(\\d+)/tickets/by_number/(\\d+)", "ig")
 
   # Ticket information listener.
   #
@@ -112,7 +112,7 @@ module.exports = (robot) ->
   #
   # @hubot use the <project.(short_name|id)> unfuddle project>
   #
-  robot.respond /use the (\w+) unfuddle project$/, (response) ->
+  robot.respond /use the (\w+) unfuddle project$/i, (response) ->
     room = response.envelope.room
 
     success = (project) ->
@@ -134,7 +134,7 @@ module.exports = (robot) ->
   #
   # @hubot what is unfuddle project <project.id>
   #
-  robot.respond /what is unfuddle project (\d+)/, (response) ->
+  robot.respond /what is unfuddle project (\d+)$/i, (response) ->
     success = (project) ->
       response.send "That would be '#{project.short_name}' (#{project.id})."
 
