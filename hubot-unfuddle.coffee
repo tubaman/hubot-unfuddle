@@ -12,11 +12,11 @@
 #   HUBOT_UNFUDDLE_PASSWORD
 #
 # Commands:
-#   hubot <trigger> - <what the respond trigger does>
-#   (proj_id|proj_short_name) #(ticket_num) - Responds with ticket no., short description and url.
-#
-# Notes:
-#   None
+#   hubot use the <project> unfuddle project - Tell the bot which Unfuddle project to use.
+#   hubot what is unfuddle project <project_id> - Describe a project.
+#   hubot show <project_id>#<ticket_num> - Responds with ticket no., short description and url.
+#   hubot show #<ticket_num> - Responds with ticket no., short description and url.
+#   #<ticket_num> - Responds with Unfuddle ticket no., short description and url.
 #
 # Author:
 #   tnightingale
@@ -51,8 +51,10 @@ module.exports = (robot) ->
   # Pulls a project id and a ticket number from a response match and makes an
   # API request.
   request_ticket_info = (response) ->
-    project_id = response.match[1]
+    project_id = parseInt(response.match[1], 10)
+    console.log("project_id: " + project_id);
     ticket_num = response.match[2]
+    console.log("ticket_num: " + ticket_num);
     success = (ticket) -> response.send ticket_info(ticket)
     error = (err) ->
       robot.logger.error "Error loading ticket. Details: #{err}"
@@ -61,9 +63,9 @@ module.exports = (robot) ->
     unf.ticket(project_id, ticket_num).then success, error
 
   # 
-  # @hubot <project.short_name>#<ticket.number>
+  # @hubot show <project.short_name>#<ticket.number>
   #
-  robot.respond /(\w+)#(\d+)/, request_ticket_info
+  robot.respond /show (\w+)#(\d+)/i, request_ticket_info
 
   #
   # <unfuddle ticket url(s)>
@@ -91,9 +93,9 @@ module.exports = (robot) ->
       get_ticket projects[room], num.trim().substr(1) for num in response.match
 
   #
-  # @hubot #<ticket.number>
+  # @hubot show #<ticket.number>
   #
-  robot.respond /(?:^|\s)#(\d+)/gi, (response) ->
+  robot.respond /show (?:^|\s)#(\d+)/gi, (response) ->
     room = response.envelope.room
 
     success = (ticket) -> response.send ticket_info(ticket)
