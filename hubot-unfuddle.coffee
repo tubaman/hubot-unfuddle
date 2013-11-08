@@ -25,6 +25,7 @@ Util = require "util"
 Unfuddle = require 'unfuddle'
 
 module.exports = (robot) ->
+  robot.parseHelp __filename
   subdomain = process.env.HUBOT_UNFUDDLE_SUBDOMAIN
   user     = process.env.HUBOT_UNFUDDLE_USER
   password = process.env.HUBOT_UNFUDDLE_PASSWORD
